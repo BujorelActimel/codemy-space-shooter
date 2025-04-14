@@ -17,8 +17,8 @@ meteor_rect = meteor_surface.get_frect(center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2))
 
 star_surface = pygame.image.load("images/star.png").convert_alpha()
 
-direction = pygame.math.Vector2(1, -1)
-speed = 500
+direction = pygame.math.Vector2()
+speed = 300
 
 star_count = 20
 
@@ -28,18 +28,23 @@ random_y = [randint(0, WINDOW_HEIGHT) for _ in range(star_count)]
 # main loop
 while running:
     dt = clock.tick() / 1000
-    # print(clock.get_fps())
 
     # evenimente
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN: # daca cineva a apast o tasta
-            if event.key == pygame.K_1:
-                print(1)
-            if event.key == pygame.K_RETURN:
-                player_rect.center = (WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2)
             
+
+    keys = pygame.key.get_pressed()
+
+    direction.x = int(keys[pygame.K_RIGHT]) - int(keys[pygame.K_LEFT])
+    direction.y = int(keys[pygame.K_DOWN]) - int(keys[pygame.K_UP])
+
+    player_rect.center += direction * speed * dt
+
+    direction = direction.normalize() if direction else direction
+    print((direction * speed).magnitude())
+
 
     # desenam
     display_surface.fill(pygame.Color(25, 8, 33))
@@ -65,8 +70,6 @@ while running:
     # if player_rect.right > WINDOW_WIDTH:
     #     player_rect.right = WINDOW_WIDTH
     #     direction.x *= -1
-
-    # player_rect.center += direction * speed * dt
 
     pygame.display.update()
 
