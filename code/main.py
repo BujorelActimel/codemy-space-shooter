@@ -1,6 +1,13 @@
 import pygame
 from random import randint
 
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load("images/player.png").convert_alpha()
+        self.rect = self.image.get_frect(center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2))
+        
+
 pygame.init()
 
 WINDOW_WIDTH, WINDOW_HEIGHT = 1080, 600 # depinde de ecran
@@ -9,8 +16,11 @@ pygame.display.set_caption("codemy-space-shooter")
 running = True
 clock = pygame.time.Clock()
 
-player_surface = pygame.image.load("images/player.png").convert_alpha()
-player_rect = player_surface.get_frect(center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2)) 
+# player_surface = pygame.image.load("images/player.png").convert_alpha()
+# player_rect = player_surface.get_frect(center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2)) 
+all_sprites = pygame.sprite.Group()
+player = Player()
+all_sprites.add(player)
 
 meteor_surface = pygame.image.load("images/meteor.png").convert_alpha()
 meteor_rect = meteor_surface.get_frect(center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2))
@@ -34,42 +44,11 @@ while running:
         if event.type == pygame.QUIT:
             running = False
             
+    all_sprites.update()
 
-    keys = pygame.key.get_pressed()
-
-    direction.x = int(keys[pygame.K_RIGHT]) - int(keys[pygame.K_LEFT])
-    direction.y = int(keys[pygame.K_DOWN]) - int(keys[pygame.K_UP])
-
-    player_rect.center += direction * speed * dt
-
-    direction = direction.normalize() if direction else direction
-    print((direction * speed).magnitude())
-
-
-    # desenam
     display_surface.fill(pygame.Color(25, 8, 33))
+    all_sprites.draw(display_surface)
 
-    for i in range(star_count):
-        display_surface.blit(star_surface, (random_x[i], random_y[i]))
-        
-    display_surface.blit(meteor_surface, meteor_rect)
-    display_surface.blit(player_surface, player_rect)
-
-    # if player_rect.top < 0:
-    #     player_rect.top = 0
-    #     direction.y *= -1
-
-    # if player_rect.bottom > WINDOW_HEIGHT:
-    #     player_rect.bottom = WINDOW_HEIGHT
-    #     direction.y *= -1
-    
-    # if player_rect.left < 0:
-    #     player_rect.left = 0
-    #     direction.x *= -1
-
-    # if player_rect.right > WINDOW_WIDTH:
-    #     player_rect.right = WINDOW_WIDTH
-    #     direction.x *= -1
 
     pygame.display.update()
 
