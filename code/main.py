@@ -57,7 +57,7 @@ class Laser(pygame.sprite.Sprite):
         self.rect.centery -= self.speed * dt
         if self.rect.bottom <= 0:
             self.kill()
-        if pygame.sprite.spritecollide(self, meteor_sprites, True):
+        if pygame.sprite.spritecollide(self, meteor_sprites, True, pygame.sprite.collide_mask):
             self.kill()
 
 
@@ -65,15 +65,22 @@ class Meteor(pygame.sprite.Sprite):
     def __init__(self, image, groups):
         super().__init__(groups)
         self.image = image
+        self.original_image = self.image
         self.rect = self.image.get_frect(midbottom = (randint(0, WINDOW_WIDTH), 0))
         self.speed = 300
         self.direction = pygame.Vector2(uniform(-0.5, 0.5), 1)
+        self.roation_speed = randint(50, 100)
+        self.angle = 0
 
     def update(self, dt):
         self.rect.center += self.speed * self.direction * dt
         if self.rect.top >= WINDOW_HEIGHT:
             self.kill()
 
+        # rotation
+        self.angle += self.roation_speed * dt
+        self.image = pygame.transform.rotozoom(self.original_image, self.angle, 1)
+        self.rect = self.image.get_frect(center = self.rect.center)
 
 class Text(pygame.sprite.Sprite):
     def __init__(self, text, groups):
@@ -90,8 +97,15 @@ def display_score():
     creati suprfata din font
     creati rect din suprafata
     si dupa blit jos in mijloc
+    desenez un dreptunghi de aceeasi culoare
+    in jurul textului si cu padding
     '''
-    pass
+
+    score = str(pygame.time.get_ticks())
+    score_surf = score_font.render(score, True, (240, 240, 240))
+    score_rect = score_surf.get_frect(midtop = (WINDOW_WIDTH//2, 50))
+    display_surface.blit(score_surf, score_rect)
+    pygame.draw.rect(display_surface, (240, 240, 240), score_rect.inflate(20, 10).move(0, -5), 5, 10)
 
 
 # game init
@@ -102,6 +116,7 @@ pygame.display.set_caption("codemy-space-shooter")
 running = True
 clock = pygame.time.Clock()
 font = pygame.font.Font("images/Oxanium-Bold.ttf", 60)
+score_font = font = pygame.font.Font("images/Oxanium-Bold.ttf", 40)
 
 #import
 star_image = pygame.image.load("images/star.png").convert_alpha()
@@ -119,7 +134,7 @@ player = Player(all_sprites)
 
 # custom events
 meteor_event = pygame.event.custom_type()
-pygame.time.set_timer(meteor_event, 500)
+pygame.time.set_timer(meteor_event, 250)
 alive = True
 
 # main loop
@@ -136,7 +151,7 @@ while running:
     # update 
     all_sprites.update(dt)
 
-    if pygame.sprite.spritecollide(player, meteor_sprites, False):
+    if pygame.sprite.spritecollide(player, meteor_sprites, False, pygame.sprite.collide_mask):
         alive = False
         player.kill()
 
