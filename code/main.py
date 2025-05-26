@@ -76,10 +76,22 @@ class Meteor(pygame.sprite.Sprite):
 
 
 class Text(pygame.sprite.Sprite):
-    def __init__(self, image, groups):
+    def __init__(self, text, groups):
         super().__init__(groups)
-        self.image = image
+        self.image = font.render(text, True, (255, 0, 0))
         self.rect = self.image.get_frect(center=(WINDOW_WIDTH/2, WINDOW_HEIGHT/2))
+
+
+def display_score():
+    '''
+    luati timpul curent
+    transformati in string
+    creati un font
+    creati suprfata din font
+    creati rect din suprafata
+    si dupa blit jos in mijloc
+    '''
+    pass
 
 
 # game init
@@ -129,10 +141,12 @@ while running:
         player.kill()
 
     # draw
-    display_surface.fill(pygame.Color(25, 8, 33))
+    display_surface.fill("#3a2e3f")
     if not alive:
-        game_over_text = font.render("Ai pierdut", True, (255, 0, 0))
-        Text(game_over_text, all_sprites)
+        Text("Ai pierdut!", all_sprites)
+    else:
+        display_score()
+    
     all_sprites.draw(display_surface)
 
 
