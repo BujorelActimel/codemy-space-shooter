@@ -40,11 +40,13 @@ class Player(pygame.sprite.Sprite):
             if pygame.time.get_ticks() - self.shoot_time >= self.cooldown_duration:
                 self.can_shoot = True
 
+
 class Star(pygame.sprite.Sprite):
     def __init__(self, image, groups):
         super().__init__(groups)
         self.image = image
         self.rect = self.image.get_frect(center=(randint(0, WINDOW_WIDTH), randint(0, WINDOW_HEIGHT)))
+
 
 class Laser(pygame.sprite.Sprite):
     def __init__(self, pos, image, groups):
@@ -82,6 +84,7 @@ class Meteor(pygame.sprite.Sprite):
         self.image = pygame.transform.rotozoom(self.original_image, self.angle, 1)
         self.rect = self.image.get_frect(center = self.rect.center)
 
+
 class Text(pygame.sprite.Sprite):
     def __init__(self, text, groups):
         super().__init__(groups)
@@ -90,17 +93,6 @@ class Text(pygame.sprite.Sprite):
 
 
 def display_score():
-    '''
-    luati timpul curent
-    transformati in string
-    creati un font
-    creati suprfata din font
-    creati rect din suprafata
-    si dupa blit jos in mijloc
-    desenez un dreptunghi de aceeasi culoare
-    in jurul textului si cu padding
-    '''
-
     score = str(pygame.time.get_ticks())
     score_surf = score_font.render(score, True, (240, 240, 240))
     score_rect = score_surf.get_frect(midtop = (WINDOW_WIDTH//2, 50))
@@ -117,6 +109,7 @@ running = True
 clock = pygame.time.Clock()
 font = pygame.font.Font("images/Oxanium-Bold.ttf", 60)
 score_font = font = pygame.font.Font("images/Oxanium-Bold.ttf", 40)
+
 
 #import
 star_image = pygame.image.load("images/star.png").convert_alpha()
@@ -136,6 +129,7 @@ player = Player(all_sprites)
 meteor_event = pygame.event.custom_type()
 pygame.time.set_timer(meteor_event, 250)
 alive = True
+
 
 # main loop
 while running:
@@ -163,8 +157,6 @@ while running:
         display_score()
     
     all_sprites.draw(display_surface)
-
-
 
     pygame.display.update()
 
