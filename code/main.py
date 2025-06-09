@@ -54,12 +54,31 @@ class Laser(pygame.sprite.Sprite):
         self.image = image
         self.rect = self.image.get_frect(center = pos)
         self.speed = 700
+        laser_sound.play()
 
     def update(self, dt):
         self.rect.centery -= self.speed * dt
         if self.rect.bottom <= 0:
             self.kill()
         if pygame.sprite.spritecollide(self, meteor_sprites, True, pygame.sprite.collide_mask):
+            self.kill()
+            AnimatedExplosion(explosion_frames, self.rect.center, all_sprites)
+
+
+class AnimatedExplosion(pygame.sprite.Sprite):
+    def __init__(self, frames, pos, groups):
+        super().__init__(groups)
+        self.image = frames[0]
+        self.rect = self.image.get_rect(center = pos)
+        self.frame_index = 0
+        self.frames = frames
+        explosion_sound.play()
+
+    def update(self, dt):
+        self.frame_index += 40 * dt # 40 este viteza animatiei; adaugam la index viteza animatiei
+        if self.frame_index < len(self.frames): #daca nu am trecut de 21 care este nr. de poze / frameuri din explosions
+            self.image = self.frames[int(self.frame_index)]
+        else:
             self.kill()
 
 
@@ -115,7 +134,14 @@ score_font = font = pygame.font.Font("images/Oxanium-Bold.ttf", 40)
 star_image = pygame.image.load("images/star.png").convert_alpha()
 laser_image = pygame.image.load("images/laser.png").convert_alpha()
 meteor_image = pygame.image.load("images/meteor.png").convert_alpha()
-
+explosion_frames = [pygame.image.load(f"images/explosion/{i}.png").convert_alpha() for i in range(21)]
+laser_sound = pygame.mixer.Sound("audio/laser.wav")
+laser_sound.set_volume(0.015)
+game_music = pygame.mixer.Sound("audio/game_music.wav")
+game_music.set_volume(0.025)
+game_music.play(-1) # melodia de pe fundal va merge la infinit
+explosion_sound = pygame.mixer.Sound("audio/explosion.wav")
+explosion_sound.set_volume(0.015)
 
 # sprites
 all_sprites = pygame.sprite.Group()
@@ -141,8 +167,8 @@ while running:
             running = False
         if event.type == meteor_event:
             Meteor(meteor_image, (all_sprites, meteor_sprites))
-            
-    # update 
+
+    # update
     all_sprites.update(dt)
 
     if pygame.sprite.spritecollide(player, meteor_sprites, False, pygame.sprite.collide_mask):
@@ -155,7 +181,7 @@ while running:
         Text("Ai pierdut!", all_sprites)
     else:
         display_score()
-    
+
     all_sprites.draw(display_surface)
 
     pygame.display.update()
