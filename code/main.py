@@ -112,11 +112,67 @@ class Text(pygame.sprite.Sprite):
 
 
 def display_score():
-    score = str(pygame.time.get_ticks())
-    score_surf = score_font.render(score, True, (240, 240, 240))
+    score_surf = score_font.render(str(int(score)), True, (240, 240, 240))
     score_rect = score_surf.get_frect(midtop = (WINDOW_WIDTH//2, 50))
     display_surface.blit(score_surf, score_rect)
     pygame.draw.rect(display_surface, (240, 240, 240), score_rect.inflate(20, 10).move(0, -5), 5, 10)
+
+
+def run_gameplay(dt):
+    global alive, player, score
+    all_sprites.update(dt)
+
+    score += dt * 100
+
+    if pygame.sprite.spritecollide(player, meteor_sprites, False, pygame.sprite.collide_mask):
+        alive = False
+        player.kill()
+
+    display_surface.fill("#3a2e3f")
+    display_score()
+    all_sprites.draw(display_surface)
+
+
+def run_game_over():
+    global put_filter, alive
+
+    if put_filter:
+        gray_surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT))
+        gray_surface.fill((50, 50, 50))
+        gray_surface.set_alpha(180)
+        display_surface.blit(gray_surface, (0, 0))
+        put_filter = False
+
+    text_surface = font.render("Game Over!", True, (255, 0, 0))
+    text_rect = text_surface.get_frect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 100))
+    display_surface.blit(text_surface, text_rect)
+
+    button_rect = pygame.FRect(0, 0, 200, 70)
+    button_rect.center = (WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50)
+    pygame.draw.rect(display_surface, (0,0,0), button_rect, border_radius=10)
+    pygame.draw.rect(display_surface, (255, 255, 255), button_rect, 3, border_radius=10)
+
+    button_text = score_font.render("Respawn", True, (255, 255, 255))
+    button_text_rect = button_text.get_frect(center=(button_rect.centerx, button_rect.centery+5))
+    display_surface.blit(button_text, button_text_rect)
+
+    if pygame.mouse.get_pressed()[0] and button_rect.collidepoint(pygame.mouse.get_pos()):
+        restart_game()
+        alive = True
+
+
+def restart_game():
+    global all_sprites, meteor_sprites, player, put_filter, score
+
+    all_sprites.empty()
+    meteor_sprites.empty()
+
+    for _ in range(20):
+        Star(star_image, all_sprites)
+
+    player = Player(all_sprites)
+    put_filter = True
+    score = 0
 
 
 # game init
@@ -155,7 +211,8 @@ player = Player(all_sprites)
 meteor_event = pygame.event.custom_type()
 pygame.time.set_timer(meteor_event, 250)
 alive = True
-
+put_filter = True
+score = 0
 
 # main loop
 while running:
@@ -165,24 +222,14 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == meteor_event:
+        if event.type == meteor_event and alive:
             Meteor(meteor_image, (all_sprites, meteor_sprites))
 
-    # update
-    all_sprites.update(dt)
-
-    if pygame.sprite.spritecollide(player, meteor_sprites, False, pygame.sprite.collide_mask):
-        alive = False
-        player.kill()
-
-    # draw
-    display_surface.fill("#3a2e3f")
-    if not alive:
-        Text("Ai pierdut!", all_sprites)
+    
+    if alive:
+        run_gameplay(dt)
     else:
-        display_score()
-
-    all_sprites.draw(display_surface)
+        run_game_over()
 
     pygame.display.update()
 
